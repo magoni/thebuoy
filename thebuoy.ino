@@ -6,9 +6,17 @@
   by Evan Magoni
 */
 
-int ledPin = 10;
-int sensorMax = 700;
-int sensorMin = 200;
+/* Configuration */
+const int buttonPin = 8;
+const int ledPin = 10;
+const int audioPin = 6;
+const int sensorMax = 700;
+const int sensorMin = 200;
+int audioThreshold = 720;
+/* End Configuration */
+
+int buttonState = 0;
+int lastButtonState = 0;
 
 void setup() {
   // initialize serial communications (for debugging only):
@@ -16,26 +24,27 @@ void setup() {
 }
 
 void loop() {
-  // read the sensor:
-  int photoResistorValue = analogRead(A0);
-  // print the sensor reading so you know its range
-  Serial.println(photoResistorValue);
-
-  // TODO read maxpitch from a knob
-  int pitch = map(photoResistorValue, sensorMax, sensorMin, 120, 1500);
-  int ledBrightness = map(photoResistorValue, sensorMin, sensorMax, 0, 255);
-
   // TODO change led color on modeswitch https://www.arduino.cc/en/Tutorial/StateChangeDetection
   // TODO read ultrasonic sensor on modeswitch https://www.sunfounder.com/ultrasonic-module-hc-sr04-distance-sensor.html
-  // TODO copy photoResistorValue to threshold when mode switches to photoresistor
+  // TODO copy sensorValue to audioThreshold when mode switches to photoresistor
   
-  int threshold = 720;
+  int photoResistorValue = analogRead(A0);
+  generateAudio(photoResistorValue);
+  delay(1);        // delay in between reads for stability
+}
+
+void generateAudio(int sensorValue) {
+  // print the sensor reading so you know its range
+  Serial.println(sensorValue);
+
+  // TODO read maxpitch from a knob
+  int pitch = map(sensorValue, sensorMax, sensorMin, 120, 1500);
+  int ledBrightness = map(sensorValue, sensorMin, sensorMax, 0, 255);
   
-  if (photoResistorValue < threshold) {
-    tone(8, pitch, 10);
+  if (sensorValue < audioThreshold) {
+    tone(audioPin, pitch, 10);
     analogWrite(ledPin, ledBrightness);
   } else {
     analogWrite(ledPin, 255);
   }
-  delay(1);        // delay in between reads for stability
 }
